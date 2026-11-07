@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chenab Hostel Management System | NIT Srinagar</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a'
+                        },
+                        hostel: {
+                            dark: '#0f172a',
+                            gold: '#f59e0b',
+                            accent: '#10b981'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            font-weight: 600;
+        }
+        .step-pill.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-lg font-bold tracking-tight text-slate-900 leading-none">Chenab Hostel</h1>
+                            <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">NIT Srinagar</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Autonomous Room Allotment & Operations Portal</p>
+                    </div>
+                </div>
+
+                <!-- Right Header Actions & Role Selector -->
+                <div class="flex items-center space-x-4">
+                    <!-- Live API Status Indicator -->
+                    <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-700">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="api-status-text">Backend Connected</span>
+                    </div>
+
+                    <!-- Role Simulator Switcher -->
+                    <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-medium">
+                        <span class="text-slate-500 px-2 flex items-center gap-1">
+                            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Role:
+                        </span>
+                        <select id="role-selector" class="bg-white border-0 py-1 px-2 rounded-md font-semibold text-slate-700 shadow-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <option value="WARDEN">Warden (Mr. Imtiyaz Ahmad)</option>
+                            <option value="STUDENT">Student (Soaib Khan)</option>
+                            <option value="ADMIN">System Administrator</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <nav class="flex space-x-8 -mb-px overflow-x-auto custom-scrollbar text-sm font-medium border-t border-slate-100">
+                <button onclick="switchTab('allotment')" id="tab-allotment" class="tab-btn active py-3 px-1 border-b-2 flex items-center gap-2">
+                    <i data-lucide="git-merge" class="w-4 h-4"></i> 5-Step Allotment Hub
+                </button>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview
+                </button>
+                <button onclick="switchTab('rooms')" id="tab-rooms" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="door-open" class="w-4 h-4"></i> Rooms & Beds
+                </button>
+                <button onclick="switchTab('students')" id="tab-students" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4"></i> Students
+                </button>
+                <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="calendar-check" class="w-4 h-4"></i> Attendance
+                </button>
+                <button onclick="switchTab('complaints')" id="tab-complaints" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i> Maintenance
+                </button>
+                <button onclick="switchTab('fees')" id="tab-fees" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Fees & Payments
+                </button>
+                <button onclick="switchTab('staff')" id="tab-staff" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-4 h-4"></i> Staff
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- =================================================================== -->
+        <!-- TAB 1: 5-STEP ALLOTMENT WORKFLOW (DIRECT IMPLEMENTATION OF DIAGRAM) -->
+        <!-- =================================================================== -->
+        <section id="view-allotment" class="space-y-6">
+            
+            <!-- Graphic Workflow Stepper (Matching the Diagram) -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-100 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                            <span class="bg-blue-600 text-white rounded-lg p-1.5 shadow-sm">
+                                <i data-lucide="workflow" class="w-5 h-5"></i>
+                            </span>
+                            Hostel Room Allotment System
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">
+                            Complete rule-driven allotment pipeline with dynamic database policies and warden overrides.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="triggerAutoAllocation()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md flex items-center gap-2 transition">
+                            <i data-lucide="play" class="w-4 h-4"></i> Run Auto-Allocate Batch
+                        </button>
+                        <button onclick="openWardenOverrideModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl shadow flex items-center gap-2 transition">
+                            <i data-lucide="lock" class="w-4 h-4"></i> Warden Manual Override
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5 Visual Stages Stepper Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-6">
+                    <!-- Step 1: Apply -->
+                    <div onclick="selectWorkflowStep(1)" id="step-card-1" class="cursor-pointer border-2 border-blue-600 bg-blue-50/50 rounded-xl p-4 transition-all hover:shadow-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center shadow-sm">1</span>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Active</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">Apply</h3>
+                        <p class="text-xs text-slate-600 mt-1">Student fills the room application with preferences.</p>
+                    </div>
+
+                    <!-- Step 2: Verify -->
+                    <div onclick="selectWorkflowStep(2)" id="step-card-2" class="cursor-pointer border border-slate-200 bg-white rounded-xl p-4 transition-all hover:border-blue-400 hover:shadow-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center shadow-sm">2</span>
+                            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Stage 2</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">Verify</h3>
+                        <p class="text-xs text-slate-600 mt-1">Student record is checked against the college system.</p>
+                    </div>
+
+                    <!-- Step 3: Rank -->
+                    <div onclick="selectWorkflowStep(3)" id="step-card-3" class="cursor-pointer border border-slate-200 bg-white rounded-xl p-4 transition-all hover:border-blue-400 hover:shadow-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center shadow-sm">3</span>
+                            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Stage 3</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">Rank</h3>
+                        <p class="text-xs text-slate-600 mt-1">Priority list is built from the allotment rules table.</p>
+                    </div>
+
+                    <!-- Step 4: Allocate -->
+                    <div onclick="selectWorkflowStep(4)" id="step-card-4" class="cursor-pointer border border-slate-200 bg-white rounded-xl p-4 transition-all hover:border-blue-400 hover:shadow-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center shadow-sm">4</span>
+                            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Stage 4</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">Allocate</h3>
+                        <p class="text-xs text-slate-600 mt-1">Rooms are assigned; warden can override.</p>
+                    </div>
+
+                    <!-- Step 5: Swap & Vacancy -->
+                    <div onclick="selectWorkflowStep(5)" id="step-card-5" class="cursor-pointer border border-slate-200 bg-white rounded-xl p-4 transition-all hover:border-blue-400 hover:shadow-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center shadow-sm">5</span>
+                            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Stage 5</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">Swap & vacancy</h3>
+                        <p class="text-xs text-slate-600 mt-1">Swaps are matched & approved; vacancies reopen.</p>
+                    </div>
+                </div>
+
+                <!-- Priority Rules Callout (Direct reproduction of diagram footnote) -->
+                <div class="mt-5 bg-slate-900 text-white rounded-xl p-4 shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-start sm:items-center gap-3">
+                        <span class="text-amber-400 font-bold text-xs uppercase px-2.5 py-1 bg-amber-400/10 rounded-md border border-amber-400/20 whitespace-nowrap">
+                            Active Policy
+                        </span>
+                        <p class="text-xs text-slate-200">
+                            <strong class="text-amber-400">Example priority rules (stored in table):</strong> Final-year students first, then merit (CGPA), then time of application. Preferences are met while a room with space is left.
+                        </p>
+                    </div>
+                    <span class="text-xs text-slate-400 italic">Rules are kept in database table, not hard-coded.</span>
+                </div>
+            </div>
+
+            <!-- Detailed Stage Interactive Panes -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left 2 Cols: Active Stage Details & Forms -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- STAGE 1 PANE: Student Application -->
+                    <div id="stage-pane-1" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Step 1: Student Room Application</h3>
+                                <p class="text-xs text-slate-500">Submit your preferences for room type, floor level, and roommate pairing.</p>
+                            </div>
+                            <span class="px-2.5 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-md">Student Portal</span>
+                        </div>
+
+                        <form id="apply-form" onsubmit="handleApply(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Applying Student</label>
+                                    <select id="apply-student-id" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-500">
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Year of Study</label>
+                                    <select id="apply-year" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-500">
+                                        <option value="4">4th Year (Final Year - High Priority)</option>
+                                        <option value="3">3rd Year</option>
+                                        <option value="2">2nd Year</option>
+                                        <option value="1">1st Year</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Current Cumulative CGPA</label>
+                                    <input type="number" id="apply-cgpa" step="0.01" min="4.0" max="10.0" value="8.75" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Room Type</label>
+                                    <select id="apply-room-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-500">
+                                        <option value="STANDARD">STANDARD (₹3,500 / month)</option>
+                                        <option value="DELUXE">DELUXE (₹4,000 / month)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Floor</label>
+                                    <select id="apply-floor" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-500">
+                                        <option value="1">Floor 1 (Rooms C101-C108)</option>
+                                        <option value="2">Floor 2 (Rooms C109-C116)</option>
+                                        <option value="3">Floor 3 (Rooms C117-C124)</option>
+                                        <option value="4">Floor 4 (Rooms C125+)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Roommate (Enrolment No)</label>
+                                    <input type="text" id="apply-roommate" placeholder="e.g. 2025BCSE0008" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Special Requirements / Medical Remarks</label>
+                                <textarea id="apply-notes" rows="2" placeholder="e.g. Ground floor preferred due to medical condition, or quiet corner for final thesis." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-medium focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            <div class="flex justify-end pt-2">
+                                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-2">
+                                    <i data-lucide="send" class="w-4 h-4"></i> Submit Room Application
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- STAGE 2 PANE: Verification Queue -->
+                    <div id="stage-pane-2" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Step 2: College System Verification Queue</h3>
+                                <p class="text-xs text-slate-500">Cross-reference applicants with ERP academic records, active registration, and clearance of dues.</p>
+                            </div>
+                            <button onclick="loadAllotmentApplications()" class="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Student</th>
+                                        <th class="py-2.5 px-3">Year / CGPA</th>
+                                        <th class="py-2.5 px-3">Preferences</th>
+                                        <th class="py-2.5 px-3">Verification</th>
+                                        <th class="py-2.5 px-3 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="verification-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- STAGE 3 PANE: Priority Ranking -->
+                    <div id="stage-pane-3" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Step 3: Priority Ranking Engine</h3>
+                                <p class="text-xs text-slate-500">Rankings dynamically evaluated using weights stored in database table `allotment_rules`.</p>
+                            </div>
+                            <button onclick="computeLiveRanking()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow flex items-center gap-1.5 transition">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> Run Ranking Algorithm
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Rank</th>
+                                        <th class="py-2.5 px-3">Student</th>
+                                        <th class="py-2.5 px-3">Year / Merit</th>
+                                        <th class="py-2.5 px-3">Calculated Score</th>
+                                        <th class="py-2.5 px-3">Application Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ranking-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- STAGE 4 PANE: Allocation & Overrides -->
+                    <div id="stage-pane-4" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Step 4: Room Allocation & Space Matching</h3>
+                                <p class="text-xs text-slate-500">Preferences matched while room space remains; Warden can override any assignment.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="triggerAutoAllocation()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Run Batch Allocation
+                                </button>
+                                <button onclick="openWardenOverrideModal()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Manual Override
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Allocation Feed -->
+                        <div id="allocation-feed" class="space-y-3">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- STAGE 5 PANE: Swaps & Vacancies -->
+                    <div id="stage-pane-5" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Step 5: Swap Matching & Vacancy Reopening</h3>
+                                <p class="text-xs text-slate-500">Peer consensual room swaps approved by Warden; vacating students automatically reopen room vacancy.</p>
+                            </div>
+                            <button onclick="openSwapRequestModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+                                <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i> Initiate Room Swap
+                            </button>
+                        </div>
+
+                        <!-- Active Swaps Table -->
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Pending & Active Room Swap Requests</h4>
+                        <div class="overflow-x-auto border border-slate-200 rounded-xl mb-6">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Student A (From)</th>
+                                        <th class="py-2.5 px-3">Student B (To)</th>
+                                        <th class="py-2.5 px-3">Reason</th>
+                                        <th class="py-2.5 px-3">Warden Approval</th>
+                                        <th class="py-2.5 px-3 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="swaps-table-body" class="divide-y divide-slate-100 font-medium">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Vacancy Reopening Desk -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <i data-lucide="door-open" class="w-4 h-4 text-emerald-600"></i> Check-Out & Vacancy Reopening Desk
+                            </h4>
+                            <p class="text-xs text-slate-500 mb-3">When a student graduates or checks out, vacating marks their allocation completed and reopens the room bed vacancy immediately.</p>
+                            <div class="flex items-center gap-2">
+                                <select id="vacate-student-select" class="flex-1 bg-white border border-slate-300 rounded-lg p-2 text-xs font-medium">
+                                    <!-- Injected by JS -->
+                                </select>
+                                <button onclick="handleVacateStudent()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1">
+                                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Vacate & Reopen Bed
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Col: Dynamic Database Rules & System Status -->
+                <div class="space-y-6">
+
+                    <!-- Table-based Policy Rules Editor (Image Footnote: Rules are kept in a table, not hard-coded) -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                    <i data-lucide="sliders" class="w-4 h-4 text-blue-600"></i>
+                                    Database Rules Engine
+                                </h3>
+                                <p class="text-xs text-slate-500">Live `allotment_rules` table parameters</p>
+                            </div>
+                            <span class="text-2xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">Dynamic</span>
+                        </div>
+
+                        <div id="rules-list" class="space-y-3 mt-4">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+
+                        <p class="text-2xs text-slate-400 mt-4 italic text-center">
+                            "A change of policy does not mean a change of code."
+                        </p>
+                    </div>
+
+                    <!-- Current Allotment Pipeline Metrics -->
+                    <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-5 shadow-sm space-y-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Pipeline Statistics</h4>
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                                <div id="stat-apps-count" class="text-xl font-bold text-blue-400">0</div>
+                                <div class="text-2xs text-slate-300 mt-0.5">Applications</div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                                <div id="stat-verified-count" class="text-xl font-bold text-emerald-400">0</div>
+                                <div class="text-2xs text-slate-300 mt-0.5">Verified</div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                                <div id="stat-allocated-count" class="text-xl font-bold text-amber-400">0</div>
+                                <div class="text-2xs text-slate-300 mt-0.5">Allocated</div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                                <div id="stat-vacant-beds" class="text-xl font-bold text-purple-400">0</div>
+                                <div class="text-2xs text-slate-300 mt-0.5">Vacant Beds</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 2: GENERAL OVERVIEW / DASHBOARD                                 -->
+        <!-- =================================================================== -->
+        <section id="view-dashboard" class="hidden space-y-6">
+            <!-- Key Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Total Capacity & Rooms</p>
+                        <h3 id="dash-rooms" class="text-2xl font-bold text-slate-900 mt-1">25 Rooms</h3>
+                        <p class="text-xs text-blue-600 mt-1">94 Bed Capacity</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i data-lucide="home" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Occupancy Rate</p>
+                        <h3 id="dash-occupancy" class="text-2xl font-bold text-slate-900 mt-1">--%</h3>
+                        <p id="dash-occupancy-sub" class="text-xs text-slate-500 mt-1">Beds assigned</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Unresolved Complaints</p>
+                        <h3 id="dash-complaints" class="text-2xl font-bold text-slate-900 mt-1">--</h3>
+                        <p class="text-xs text-amber-600 mt-1">Maintenance desk</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Pending Fee Balance</p>
+                        <h3 id="dash-fees" class="text-2xl font-bold text-slate-900 mt-1">₹--</h3>
+                        <p class="text-xs text-rose-600 mt-1">Outstanding dues</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                        <i data-lucide="wallet" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floor Distribution Preview -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="layers" class="w-5 h-5 text-blue-600"></i> Floor-Wise Room Utilization
+                </h3>
+                <div id="floor-summary" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 3: ROOMS & BEDS MATRIX                                          -->
+        <!-- =================================================================== -->
+        <section id="view-rooms" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Rooms & Living Quarters</h2>
+                    <p class="text-xs text-slate-500">Explore all rooms across Floors 1-4 with real-time bed capacity and occupants.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-500">Filter Floor:</span>
+                    <select id="room-floor-filter" onchange="filterRooms()" class="bg-slate-50 border border-slate-300 rounded-lg py-1.5 px-3 text-xs font-medium">
+                        <option value="ALL">All Floors (25 Rooms)</option>
+                        <option value="1">Floor 1 (C101-C108)</option>
+                        <option value="2">Floor 2 (C109-C116)</option>
+                        <option value="3">Floor 3 (C117-C124)</option>
+                        <option value="4">Floor 4 (C125)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="rooms-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: STUDENTS DIRECTORY                                           -->
+        <!-- =================================================================== -->
+        <section id="view-students" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Student Directory</h2>
+                    <p class="text-xs text-slate-500">Search and review registered hostel students, contact data and room allotments.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="text" id="student-search-input" onkeyup="filterStudents()" placeholder="Search by name or enrolment..." class="bg-slate-50 border border-slate-300 rounded-lg py-1.5 px-3 text-xs font-medium w-64 focus:ring-2 focus:ring-blue-500">
+                    <select id="student-branch-filter" onchange="filterStudents()" class="bg-slate-50 border border-slate-300 rounded-lg py-1.5 px-3 text-xs font-medium">
+                        <option value="ALL">All Branches</option>
+                        <option value="CSE">CSE</option>
+                        <option value="MME">MME</option>
+                        <option value="MEC">MEC</option>
+                        <option value="ITE">ITE</option>
+                        <option value="CIV">CIV</option>
+                        <option value="ECE">ECE</option>
+                        <option value="ELE">ELE</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">Enrolment No</th>
+                                <th class="py-3 px-4">Full Name</th>
+                                <th class="py-3 px-4">Branch</th>
+                                <th class="py-3 px-4">Room Allotted</th>
+                                <th class="py-3 px-4">Phone / Contact</th>
+                                <th class="py-3 px-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 5: ATTENDANCE TRACKER                                           -->
+        <!-- =================================================================== -->
+        <section id="view-attendance" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Attendance Log</h2>
+                    <p class="text-xs text-slate-500">Daily check-in / check-out times and night roll-call ledger.</p>
+                </div>
+                <button onclick="openMarkAttendanceModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-1.5">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Mark Roll Call
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Student</th>
+                                <th class="py-3 px-4">Enrolment</th>
+                                <th class="py-3 px-4">Check-In</th>
+                                <th class="py-3 px-4">Check-Out</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 6: MAINTENANCE COMPLAINTS                                       -->
+        <!-- =================================================================== -->
+        <section id="view-complaints" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Hostel Maintenance & Complaints Desk</h2>
+                    <p class="text-xs text-slate-500">Electrical, plumbing, internet and room repair ticketing system.</p>
+                </div>
+                <button onclick="openNewComplaintModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-1.5">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Log New Ticket
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="complaints-grid">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 7: FEES & PAYMENTS                                              -->
+        <!-- =================================================================== -->
+        <section id="view-fees" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Fee Accounts & Payment Records</h2>
+                    <p class="text-xs text-slate-500">Computed balances and transactions (`v_fee_balance`).</p>
+                </div>
+                <button onclick="openPaymentModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-1.5">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Record Payment
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">Student</th>
+                                <th class="py-3 px-4">Enrolment</th>
+                                <th class="py-3 px-4">Year / Type</th>
+                                <th class="py-3 px-4">Amount Due</th>
+                                <th class="py-3 px-4">Paid</th>
+                                <th class="py-3 px-4">Balance</th>
+                                <th class="py-3 px-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fees-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 8: STAFF ROSTER                                                 -->
+        <!-- =================================================================== -->
+        <section id="view-staff" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 class="text-xl font-bold text-slate-900">Hostel Administration & Staff Roster</h2>
+                <p class="text-xs text-slate-500">Warden, Caretakers, Security and Maintenance Personnel.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="staff-grid">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =================================================================== -->
+    <!-- MODALS                                                              -->
+    <!-- =================================================================== -->
+
+    <!-- Warden Override Modal -->
+    <div id="modal-warden-override" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-amber-600"></i> Warden Manual Override
+                </h3>
+                <button onclick="closeModal('modal-warden-override')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500">As Warden, you can manually assign or reassign any student to a specific room, overriding rank order.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Select Student</label>
+                    <select id="override-student" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Room</label>
+                    <select id="override-room" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Administrative Reason</label>
+                    <input type="text" id="override-reason" placeholder="e.g. Special accommodations / departmental necessity" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button onclick="closeModal('modal-warden-override')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="executeWardenOverride()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow">Apply Override</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swap Request Modal -->
+    <div id="modal-swap-request" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5 text-indigo-600"></i> Initiate Room Swap
+                </h3>
+                <button onclick="closeModal('modal-swap-request')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Requester Student (Currently Allotted)</label>
+                    <select id="swap-requester-select" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Student to Swap With</label>
+                    <select id="swap-target-select" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Reason for Swap</label>
+                    <input type="text" id="swap-reason" placeholder="e.g. Project team coordination / study group" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button onclick="closeModal('modal-swap-request')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="submitSwapRequest()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow">Send Swap Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div id="modal-record-payment" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i> Record Fee Payment
+                </h3>
+                <button onclick="closeModal('modal-record-payment')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Fee Account</label>
+                    <select id="pay-fee-select" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Amount to Pay (₹)</label>
+                    <input type="number" id="pay-amount" value="21000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+                    <select id="pay-method" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-medium">
+                        <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+                        <option value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS)</option>
+                        <option value="CASH">Cash Deposit</option>
+                        <option value="CARD">Debit / Credit Card</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button onclick="closeModal('modal-record-payment')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="submitPayment()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow">Confirm Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frontend Script Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
